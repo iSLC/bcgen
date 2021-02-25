@@ -1,0 +1,9 @@
+# Executables
+*.exe
+*.dll
+*.so
+# Temp files
+package-lock.json
+
+# Directories
+/node_modules/*
