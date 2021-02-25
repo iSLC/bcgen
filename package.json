@@ -1,7 +1,7 @@
 {
   "name": "bcgen",
   "version": "1.0.0",
-  "description": "Barcode Generator",
+  "description": "Barcode Label Generator",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

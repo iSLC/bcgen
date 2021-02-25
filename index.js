@@ -277,5 +277,5 @@ app.listen(port, () => {
     console.log(`Application accessible on port ${port}`);
 });
 // --------------------------------------------------------------------------------------------------------------------
-//setInterval(findRemoveSync.bind(this, path.join(__dirname, '/out'), {age: {seconds: 3600}}), 600000);
-setInterval(findRemoveSync.bind(this, path.join(__dirname, '/out'), {age: {seconds: 60}}), 60000);
+setInterval(findRemoveSync.bind(this, path.join(__dirname, '/out'), {age: {seconds: 3600}}), 600000);
+//setInterval(findRemoveSync.bind(this, path.join(__dirname, '/out'), {age: {seconds: 60}}), 60000);
