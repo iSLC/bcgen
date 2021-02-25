@@ -1,0 +1,21 @@
+{
+  "name": "bcgen",
+  "version": "1.0.0",
+  "description": "Barcode Generator",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Sandu Liviu Catalin",
+  "license": "ISC",
+  "dependencies": {
+    "barcoder": "^2.0.1",
+    "bardcode": "^2.2.0",
+    "body-parser": "^1.19.0",
+    "canvas": "^2.6.1",
+    "express": "^4.17.1",
+    "find-remove": "^2.0.3",
+    "pdf-merger-js": "^3.0.5",
+    "pdfjs": "^2.4.2"
+  }
+}

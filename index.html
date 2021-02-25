@@ -1,0 +1,251 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <!-- Required meta tags -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- Petal CSS -->
+        <link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/gh/shakrmedia/petal@0.11.1/dist/petal.min.css">
+        <!-- Title -->
+        <title>Bar-code Generator</title>
+    </head>
+    <body>
+        <header>
+            <div class="container mt-5">
+                <button id="build_pdf" class="btn">Build PDF</button>
+            </div>
+        </header>
+        <section>
+            <div class="container mt-5">
+                <form>
+                    <div class="form-group">
+                        <div class="input-group mt-5">
+                            <span class="input-addon" style="width: 5.4em;">Type</span>
+                            <input class="input" id="article_type" type="text" minlength="1" maxlength="12" autocomplete="off" />
+                        </div>
+                        <div class="input-group mt-5">
+                            <span class="input-addon" style="width: 5.4em;">ID</span>
+                            <input class="input" id="article_id" type="text" minlength="1" maxlength="16" autocomplete="off" />
+                        </div>
+                        <div class="input-group mt-5">
+                            <span class="input-addon" style="width: 5.4em;">Color</span>
+                            <input class="input" id="article_color" type="text" minlength="1" maxlength="16" autocomplete="off" />
+                        </div>
+                        <div class="input-group mt-5">
+                            <span class="input-addon" style="width: 5.4em;">Code</span>
+                            <input class="input" id="article_code" type="text" value="000000000000" pattern="\d*" minlength="12" maxlength="12" autocomplete="off" />
+                        </div>
+                        <div class="input-group mt-5">
+                            <span class="input-addon" style="width: 5.4em;">Number</span>
+                            <input class="input" id="article_num1" type="number" value="0" min="0" max="99" autocomplete="off" />
+                            <span class="input-addon" style="width: 5.4em;">Number</span>
+                            <input class="input" id="article_num2" type="number" value="0" min="0" max="99" autocomplete="off" />
+                        </div>
+                        <div class="input-group mt-5">
+                            <span class="input-addon" style="width: 5.4em;">Amount</span>
+                            <input class="input" id="article_amount" type="number" value="1" min="1" max="1000" autocomplete="off" />
+                            <span class="input-addon-btn">
+                                <button id="add_article" class="btn green">Add</button>
+                            </span>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </section>
+        <section>
+            <div class="container mt-5">
+                <table class="table table-condensed table-hover">
+                    <thead>
+                        <tr>
+                            <th class="fit" scope="col">#</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">ID</th>
+                            <th scope="col">Color</th>
+                            <th scope="col">Code</th>
+                            <th class="fit" scope="col">Number</th>
+                            <th class="fit" scope="col">Number</th>
+                            <th class="fit" scope="col"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="article_list">
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="6"></td>
+                            <th scope="row">Total</td>
+                            <td id="total_articles">#</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+        <!-- jQuery -->
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.min.js" integrity="sha384-ZvpUoO/+PpLXR1lu4jmpXWu80pZlYUAfxl5NsBMWOEPSjUn/6Z/hRTt8+pR6L4N2" crossorigin="anonymous"></script>
+        <!-- Application logic -->
+        <script>
+             var getAbsoluteUrl = (function() {
+                 var a;
+                 return function(url) {
+                     if(!a) a = document.createElement('a');
+                     a.href = url;
+                     return a.href;
+                 }
+            })();
+            // Retrieve the bar-code list from local storage
+            function FetchArticleList() {
+                // Retrieve items from local storage
+                var l = localStorage.getItem("barcode_list");
+                // Is the string/value empty?
+                if (!l) l = [];
+                // De-serialize it
+                else l = JSON.parse(l);
+                // make sure it is an array
+                if (!Array.isArray(l)) l = [];
+                // Return the list
+                return l;
+            }
+            // Update the bar-code list from local storage
+            function UpdateArticleList(l) {
+                // Save items into local storage
+                localStorage.setItem('barcode_list', JSON.stringify(l));
+            }
+            // Build article table from bar-code list
+            function BuildTable(bclist) {
+                // Remove previous values
+                $("#article_list").empty();
+                // Total articles count
+                var total = 0;
+                // Iterate over the specified list
+                for(var i = 0; i < bclist.length; i++) {
+                    // Fetch current element
+                    var e = bclist[i];
+                    // Make sure the array does not contain null elements
+                    if (typeof e !== 'object' || e === null) continue;
+                    // Insert into article table
+                    $("#article_list").append(`
+                        <tr>
+                            <td>${e.amount}</td>
+                            <td>${e.type}</td>
+                            <td>${e.id}</td>
+                            <td>${e.color}</td>
+                            <td>${e.code}</td>
+                            <td>${e.num1}</td>
+                            <td>${e.num2}</td>
+                            <td index="${i}">
+                                <button class="btn red compact erase">X</button>
+                                <button class="btn green compact clone">O</button>
+                            </td>
+                        </tr>
+                    `);
+                    // Sum total and update value
+                    total += parseInt(e.amount);
+                }
+                // Update total
+                $('#total_articles').text(total);
+            }
+            // Import bar-code list from local storage
+            $(document).ready(function() {
+                // Retrieve bar-code article list
+                var bclist = FetchArticleList();
+                // Update article table
+                BuildTable(bclist);
+            });
+            // Add article to bar-code list
+            $('#add_article').click(function(e) {
+                // Fetch form values
+                var type_value = $("#article_type").val();
+                var id_value = $("#article_id").val();
+                var color_value = $("#article_color").val();
+                var code_value = $("#article_code").val();
+                var num1_value = parseInt($("#article_num1").val());
+                var num2_value = parseInt($("#article_num2").val());
+                var amount_value = parseInt($("#article_amount").val());
+                // Validate code
+                if (code_value.length != 12) return;
+                // Validate type
+                if (type_value.length < 1 || type_value.length > 12) return;
+                // Validate id
+                if (id_value.length < 1 || id_value.length > 16) return;
+                // Validate color
+                if (color_value.length < 1 || color_value.length > 16) return;
+                // Validate num1
+                if (num1_value < 0 || num1_value > 99) return;
+                // Validate num2
+                if (num2_value < 0 || num2_value > 99) return;
+                // Validate amount
+                if (amount_value < 1 || amount_value > 1000) return;
+                // Retrieve bar-code article list
+                var bclist = FetchArticleList();
+                // Append to list
+                bclist.push({
+                    amount : amount_value,
+                    type : type_value,
+                    id : id_value,
+                    color : color_value,
+                    code : code_value,
+                    num1 : num1_value,
+                    num2 : num2_value
+                });
+                // Update article table
+                BuildTable(bclist);
+                // Save items into local storage
+                UpdateArticleList(bclist);
+            });
+            // Listen for article erase events
+            $('#article_list').on('click', 'button.erase', function() {
+                // Extract the index of the selected row
+                var index = parseInt($(this).parent().attr('index'));
+                // Retrieve bar-code article list
+                var bclist = FetchArticleList();
+                // Erase the element from the list
+                if (index < bclist.length) bclist.splice(index, 1);
+                // Update article table
+                BuildTable(bclist);
+                // Save items into local storage
+                UpdateArticleList(bclist);
+            });
+            // Listen for article clone events
+            $('#article_list').on('click', 'button.clone', function() {
+                // Extract the index of the selected row
+                var index = parseInt($(this).parent().attr('index'));
+                // Retrieve bar-code article list
+                var bclist = FetchArticleList();
+                // Erase the element from the list
+                if (index >= bclist.length) return false;
+                // Fetch selected element
+                var e = bclist[index];
+                // Import values from selected element
+                $("#article_type").val(e.type);
+                $("#article_id").val(e.id);
+                $("#article_color").val(e.color);
+                $("#article_code").val(e.code);
+                $("#article_amount").val(1);
+            });
+            // Build PDF
+            $('#build_pdf').click(function(e) {
+                // Retrieve bar-code article list
+                var bclist = FetchArticleList();
+                // Perform the server request
+                $.ajax({
+                    method: 'POST',
+                    url: '/pdf',
+                    data: JSON.stringify(bclist),
+                    contentType: 'application/json; charset=utf-8'
+                }).done(function(msg) {
+                    setTimeout(function() {
+                        if (typeof msg === 'string' && msg.charAt(0) == '@') {
+                            window.alert(msg.substring(1));
+                        } else if (typeof msg === 'string') {
+                            var url = getAbsoluteUrl(`/out/${msg}`);
+                            var link=document.createElement('a');
+                            document.body.appendChild(link);
+                            link.href=url;
+                            link.target='_blank';
+                            link.click();
+                        }
+                      }, 1000);
+                });
+            });
+        </script>
+    </body>
+</html>

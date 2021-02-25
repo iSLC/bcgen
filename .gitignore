@@ -7,3 +7,6 @@ package-lock.json
 
 # Directories
 /node_modules/*
+
+# Hidden files and folders
+.*
