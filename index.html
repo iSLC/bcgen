@@ -25,11 +25,11 @@
                         </div>
                         <div class="input-group mt-5">
                             <span class="input-addon" style="width: 5.4em;">ID</span>
-                            <input class="input" id="article_id" type="text" minlength="1" maxlength="16" autocomplete="off" />
+                            <input class="input" id="article_id" type="text" minlength="1" maxlength="18" autocomplete="off" />
                         </div>
                         <div class="input-group mt-5">
                             <span class="input-addon" style="width: 5.4em;">Color</span>
-                            <input class="input" id="article_color" type="text" minlength="1" maxlength="16" autocomplete="off" />
+                            <input class="input" id="article_color" type="text" minlength="1" maxlength="18" autocomplete="off" />
                         </div>
                         <div class="input-group mt-5">
                             <span class="input-addon" style="width: 5.4em;">Code</span>
@@ -37,9 +37,9 @@
                         </div>
                         <div class="input-group mt-5">
                             <span class="input-addon" style="width: 5.4em;">Number</span>
-                            <input class="input" id="article_num1" type="number" value="0" min="0" max="99" autocomplete="off" />
+                            <input class="input" id="article_num1" type="number" value="1" min="1" max="99" autocomplete="off" />
                             <span class="input-addon" style="width: 5.4em;">Number</span>
-                            <input class="input" id="article_num2" type="number" value="0" min="0" max="99" autocomplete="off" />
+                            <input class="input" id="article_num2" type="number" value="1" min="1" max="99" autocomplete="off" />
                         </div>
                         <div class="input-group mt-5">
                             <span class="input-addon" style="width: 5.4em;">Amount</span>
@@ -166,13 +166,13 @@
                 // Validate type
                 if (type_value.length < 1 || type_value.length > 12) return;
                 // Validate id
-                if (id_value.length < 1 || id_value.length > 16) return;
+                if (id_value.length < 1 || id_value.length > 18) return;
                 // Validate color
-                if (color_value.length < 1 || color_value.length > 16) return;
+                if (color_value.length < 1 || color_value.length > 18) return;
                 // Validate num1
-                if (num1_value < 0 || num1_value > 99) return;
+                if (num1_value < 1 || num1_value > 99) return;
                 // Validate num2
-                if (num2_value < 0 || num2_value > 99) return;
+                if (num2_value < 1 || num2_value > 99) return;
                 // Validate amount
                 if (amount_value < 1 || amount_value > 1000) return;
                 // Retrieve bar-code article list

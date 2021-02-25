@@ -97,27 +97,27 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, num1, num2) {
     ctx.restore();
     // Paint ID
     ctx.save();
-    ctx.font = '26px "Unispace"';
+    ctx.font = '24px "Unispace"';
     ctx.textAlign = 'center';
     ctx.translate(r - 160, t + (b - t) / 2);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText(`${id}`, 0, 14);
+    ctx.fillText(`${id}`, 0, 12);
     ctx.restore();
     // Paint #1 Label
     ctx.save();
-    ctx.font = '24px "Unispace"';
+    ctx.font = '20px "Unispace"';
     ctx.textAlign = 'center';
     ctx.translate(r - 216, t + 96);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText('Text', 0, 12);
+    ctx.fillText('Text', 0, 10);
     ctx.restore();
     // Paint #1 Label
     ctx.save();
-    ctx.font = '24px "Unispace"';
+    ctx.font = '20px "Unispace"';
     ctx.textAlign = 'center';
     ctx.translate(r - 216, b - 96);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText('Text', 0, 12);
+    ctx.fillText('Text', 0, 10);
     ctx.restore();
     // Paint #1
     ctx.save();
@@ -137,11 +137,11 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, num1, num2) {
     ctx.restore();
     // Paint Color
     ctx.save();
-    ctx.font = '28px "Unispace"';
+    ctx.font = '24px "Unispace"';
     ctx.textAlign = 'center';
     ctx.translate(l + 256, t + (b - t) / 2);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText(`${color}`, 0, 14);
+    ctx.fillText(`${color}`, 0, 12);
     ctx.restore();
     // Draw bar-code
     bardcode.drawBarcode(ctx, `${code}`, {
@@ -199,10 +199,10 @@ app.post('/pdf', (req, res) => {
         // Break if information is not valid
         if (!code || code.length != 12 || barcoder.validate(`${code}`)) return !(failed = `@Invalid ean code ${code}`);
         if (!type || type.length < 1 || type.length > 12) return !(failed = `@Invalid type ${type}`);
-        if (!id || id.length < 1 || id.length > 16) return !(failed = `@Invalid id ${id}`);
-        if (!color || color.length < 1 || color.length > 16) return !(failed = `@Invalid color ${color}`);
-        if (!e.num1 || num1 < 0 || num1 > 99) return !(failed = `@Invalid number ${num1}`);
-        if (!e.num2 || num2 < 0 || num2 > 99) return !(failed = `@Invalid number ${num2}`);
+        if (!id || id.length < 1 || id.length > 18) return !(failed = `@Invalid id ${id}`);
+        if (!color || color.length < 1 || color.length > 18) return !(failed = `@Invalid color ${color}`);
+        if (!e.num1 || num1 < 1 || num1 > 99) return !(failed = `@Invalid number ${num1}`);
+        if (!e.num2 || num2 < 1 || num2 > 99) return !(failed = `@Invalid number ${num2}`);
         // Generate bar-code labels
         for (var i = 0; i < amount; ++i) {
             // Limit bar-code count
