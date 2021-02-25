@@ -1,3 +1,6 @@
+/* --------------------------------------------------------------------------------------------------------------------
+ * Import necessary libraries.
+*/
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
@@ -8,29 +11,44 @@ const bodyParser = require('body-parser');
 const PDFMerger = require('pdf-merger-js');
 const findRemoveSync = require('find-remove');
 const {createCanvas, registerFont, loadImage} = require('canvas');
-// --------------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * Register primary font.
+*/
 registerFont('unispace.rg.ttf', {family: 'Unispace'});
 // --------------------------------------------------------------------------------------------------------------------
 const port = 8080;
 const app = express();
-// --------------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * Install middle-ware into web-server.
+*/
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
-// --------------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * Expose the directory where the files are generated so they can be downloaded.
+*/
 app.use('/out', express.static(path.join(__dirname, 'out')));
-// --------------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * Main web-server entry point which serves the HTML interface.
+*/
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/index.html'));
 });
-// --------------------------------------------------------------------------------------------------------------------
-const PAGE_W = 2480;
-const PAGE_H = 3508;
-const CODE_W = Math.round(PAGE_W / 4);
-const CODE_H = Math.round(PAGE_H / 10);
-// --------------------------------------------------------------------------------------------------------------------
-function GenerateBarcode(ctx, t, l, b, r, type, id, color, code, num1, num2) {
+/* --------------------------------------------------------------------------------------------------------------------
+ * A4 page size in pixels at 300ppi resolution.
+*/
+const PAGE_W = 2480; // Width
+const PAGE_H = 3508; // Height
+/* --------------------------------------------------------------------------------------------------------------------
+ * Size of a single cell in a 4x10 label grid with no margins.
+*/
+const CODE_W = Math.round(PAGE_W / 4); // Width
+const CODE_H = Math.round(PAGE_H / 10); // Height
+/* --------------------------------------------------------------------------------------------------------------------
+ * Paint a single label within the specified rectangle.
+*/
+function GenerateLabel(ctx, t, l, b, r, type, id, color, code, num1, num2) {
     // Paing outer frame
     ctx.beginPath();
     ctx.moveTo(l + 64, t + 32);
@@ -144,27 +162,31 @@ function GenerateBarcode(ctx, t, l, b, r, type, id, color, code, num1, num2) {
     ctx.fillText(`${code}`, 0, 8);
     ctx.restore();
 }
-// --------------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * Generate a random name for a file.
+*/
 function RandomName(ext) { return `bc.${crypto.randomBytes(6).readUIntLE(0, 6).toString(36)}.${ext}`; }
-// --------------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * Web-server entry point which receives input and generates PDF files.
+*/
 app.post('/pdf', (req, res) => {
-    // Check for empty request
+    // Check for empty request body
     if (typeof req.body !== 'object' || req.body === null) {
         res.send('@Invalid request body');
         return;
     }
-    // File name
+    // Initial file name
     var name = RandomName('pdf');
     // File path
     var fp = path.join('out/', name);
     // File name list
     var file_list = [fp];
-    // Create canvas
+    // Create initial canvas
     var canvas = createCanvas(PAGE_W, PAGE_H, 'pdf');
     var ctx = canvas.getContext('2d');
     // Bar-code count, row/column and failure state
     var count = 0, row = 0, col = 0, failed = null;
-    // Top/Left/Bottom/Right points
+    // Top/Left/Bottom/Right label rectangle points
     var top = 0, left = 0, bottom = 0, right = 0;
     // Iterate over requested bar-code entries
     req.body.every(function(e, idx) {
@@ -172,7 +194,7 @@ app.post('/pdf', (req, res) => {
         var amount = parseInt(e.amount);
         // Break if amount is not valid
         if (!e.amount || amount < 1 || amount > 1000) return !(failed = `@Invalid amount ${amount}`);
-        // Fetch article information
+        // Fetch label information
         var type = e.type, id = e.id, color = e.color, code = e.code, num1 = parseInt(e.num1), num2 = parseInt(e.num2);
         // Break if information is not valid
         if (!code || code.length != 12 || barcoder.validate(`${code}`)) return !(failed = `@Invalid ean code ${code}`);
@@ -181,17 +203,17 @@ app.post('/pdf', (req, res) => {
         if (!color || color.length < 1 || color.length > 16) return !(failed = `@Invalid color ${color}`);
         if (!e.num1 || num1 < 0 || num1 > 99) return !(failed = `@Invalid number ${num1}`);
         if (!e.num2 || num2 < 0 || num2 > 99) return !(failed = `@Invalid number ${num2}`);
-        // Generate article bar-codes
+        // Generate bar-code labels
         for (var i = 0; i < amount; ++i) {
             // Limit bar-code count
             if (count >= 2000) {
                  return !(failed = `@Article limit reached ${count}`);
             }
-            // Advance page, if necessary
+            // Span another page if no more room
             if (row == 9 && col == 4) {
-                // Write current file
+                // Write current canvas
                 fs.writeFileSync(fp, canvas.toBuffer());
-                // File name
+                // New file name
                 name = RandomName('pdf');
                 // File path
                 fp = path.join('out/', name);
@@ -208,7 +230,7 @@ app.post('/pdf', (req, res) => {
                 ++row;
                 col=0;
             }
-            // Compute bar-code frame
+            // Compute label frame
             top = CODE_H * row;
             left = CODE_W * col;
             bottom = top + CODE_H;
@@ -217,13 +239,13 @@ app.post('/pdf', (req, res) => {
             ++col;
             // Next bar-code
             ++count;
-            // Paint content
-            GenerateBarcode(ctx, top, left, bottom, right, type, id, color, code, num1, num2);
+            // Paint label content
+            GenerateLabel(ctx, top, left, bottom, right, type, id, color, code, num1, num2);
         }
         // Process next one
         return true;
     });
-    // Write generated file
+    // Write last canvas
     if (!failed && count) {
         fs.writeFileSync(fp, canvas.toBuffer());
     // Should we remove leftover files?
@@ -272,10 +294,14 @@ app.post('/pdf', (req, res) => {
     // Return file name
     res.send(name);
 });
-// --------------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * Start the web-server on the specified port.
+*/
 app.listen(port, () => {
-    console.log(`Application accessible on port ${port}`);
+    console.log(`Server accessible on port ${port}`);
 });
-// --------------------------------------------------------------------------------------------------------------------
+/* --------------------------------------------------------------------------------------------------------------------
+ * Remove files after a while.
+*/
 setInterval(findRemoveSync.bind(this, path.join(__dirname, '/out'), {age: {seconds: 3600}}), 600000);
 //setInterval(findRemoveSync.bind(this, path.join(__dirname, '/out'), {age: {seconds: 60}}), 60000);
