@@ -9,7 +9,7 @@ const PDFMerger = require('pdf-merger-js');
 const findRemoveSync = require('find-remove');
 const {createCanvas, registerFont, loadImage} = require('canvas');
 // --------------------------------------------------------------------------------------------------------------------
-registerFont('font/unispace.rg.ttf', {family: 'Unispace'});
+registerFont('unispace.rg.ttf', {family: 'Unispace'});
 // --------------------------------------------------------------------------------------------------------------------
 const port = 8080;
 const app = express();
