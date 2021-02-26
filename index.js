@@ -26,7 +26,7 @@ const app = express();
 */
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
-  extended: true
+    extended: true
 }));
 /* --------------------------------------------------------------------------------------------------------------------
  * Expose the directory where the files are generated so they can be downloaded.
