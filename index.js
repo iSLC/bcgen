@@ -51,20 +51,20 @@ const CODE_H = Math.round(PAGE_H / 10); // Height
 function GenerateLabel(ctx, t, l, b, r, type, id, color, code, waist, inseam) {
     // Paing outer frame
     ctx.beginPath();
-    ctx.moveTo(l + 64, t + 32);
-    ctx.lineTo(r - 64, t + 32);
-    ctx.lineTo(r - 64, b - 32);
-    ctx.lineTo(l + 64, b - 32);
-    ctx.lineTo(l + 64, t + 32);
+    ctx.moveTo(l + 112, t + 32);
+    ctx.lineTo(r - 112, t + 32);
+    ctx.lineTo(r - 112, b - 32);
+    ctx.lineTo(l + 112, b - 32);
+    ctx.lineTo(l + 112, t + 32);
     ctx.closePath();
     ctx.stroke();
     // Paint inner box
     ctx.beginPath();
-    ctx.moveTo(r - 128, t + 36);
-    ctx.lineTo(r - 128, b - 36);
-    ctx.lineTo(l + 224, b - 36);
-    ctx.lineTo(l + 224, t + 36);
-    ctx.lineTo(r - 128, t + 36);
+    ctx.moveTo(r - 160, t + 36);
+    ctx.lineTo(r - 160, b - 36);
+    ctx.lineTo(l + 256, b - 36);
+    ctx.lineTo(l + 256, t + 36);
+    ctx.lineTo(r - 160, t + 36);
     ctx.closePath();
     ctx.stroke();
     // Paint top innner separator
@@ -91,7 +91,7 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, waist, inseam) {
     ctx.save();
     ctx.font = '40px "Unispace"';
     ctx.textAlign = 'center';
-    ctx.translate(r - 96, t + (b - t) / 2);
+    ctx.translate(r - 132, t + (b - t) / 2);
     ctx.rotate(Math.PI / 2);
     ctx.fillText(`${type}`, 0, 20);
     ctx.restore();
@@ -99,7 +99,7 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, waist, inseam) {
     ctx.save();
     ctx.font = '24px "Unispace"';
     ctx.textAlign = 'center';
-    ctx.translate(r - 160, t + (b - t) / 2);
+    ctx.translate(r - 174, t + (b - t) / 2);
     ctx.rotate(Math.PI / 2);
     ctx.fillText(`${id}`, 0, 12);
     ctx.restore();
@@ -139,14 +139,14 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, waist, inseam) {
     ctx.save();
     ctx.font = '24px "Unispace"';
     ctx.textAlign = 'center';
-    ctx.translate(l + 256, t + (b - t) / 2);
+    ctx.translate(l + 274, t + (b - t) / 2);
     ctx.rotate(Math.PI / 2);
     ctx.fillText(`${color}`, 0, 12);
     ctx.restore();
     // Draw bar-code
     bardcode.drawBarcode(ctx, `${code}`, {
         type: 'Code 128',
-        x: l + 160,
+        x: l + 200,
         y: t + (b - t) / 2,
         horizontalAlign: 'center',
         verticalAlign: 'middle',
@@ -157,7 +157,7 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, waist, inseam) {
     ctx.save();
     ctx.font = '22px "Unispace"';
     ctx.textAlign = 'center';
-    ctx.translate(l + 86, t + (b - t) / 2);
+    ctx.translate(l + 136, t + (b - t) / 2);
     ctx.rotate(Math.PI / 2);
     ctx.fillText(`${code}`, 0, 8);
     ctx.restore();
