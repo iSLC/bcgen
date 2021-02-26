@@ -230,11 +230,27 @@ app.post('/pdf', (req, res) => {
                 ++row;
                 col=0;
             }
-            // Compute label frame
-            top = CODE_H * row;
-            left = CODE_W * col;
-            bottom = top + CODE_H;
-            right = left + CODE_W;
+            // First row?
+            if (row == 0) {
+                // Offset first row down to account for printer limits
+                top = CODE_H * row + 32;
+                left = CODE_W * col;
+                bottom = top + CODE_H;
+                right = left + CODE_W;
+            // Last row?
+            } else if (row == 9) {
+                // Offset first row up to account for printer limits
+                top = CODE_H * row - 32;
+                left = CODE_W * col;
+                bottom = top + CODE_H;
+                right = left + CODE_W;
+            } else {
+                // Compute normal label frame
+                top = CODE_H * row;
+                left = CODE_W * col;
+                bottom = top + CODE_H;
+                right = left + CODE_W;
+            }
             // Next column
             ++col;
             // Next bar-code
