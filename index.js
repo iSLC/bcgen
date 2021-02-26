@@ -3,6 +3,7 @@
 */
 const fs = require('fs');
 const path = require('path');
+const docx = require("docx");
 const crypto = require('crypto');
 const express = require('express');
 const barcoder = require('barcoder');
@@ -11,6 +12,8 @@ const bodyParser = require('body-parser');
 const PDFMerger = require('pdf-merger-js');
 const findRemoveSync = require('find-remove');
 const {createCanvas, registerFont, loadImage} = require('canvas');
+// --------------------------------------------------------------------------------------------------------------------
+const { AlignmentType, Document, HeadingLevel, Packer, Paragraph, TabStopPosition, TabStopType, TextRun } = docx;
 /* --------------------------------------------------------------------------------------------------------------------
  * Register primary font.
 */
@@ -311,6 +314,188 @@ app.post('/pdf', (req, res) => {
     res.send(name);
 });
 /* --------------------------------------------------------------------------------------------------------------------
+ * Web-server entry point which receives input and generates Doc files.
+*/
+app.post('/doc', (req, res) => {
+    // Check for empty request body
+    if (typeof req.body !== 'object' || req.body === null) {
+        res.send('@Invalid request body');
+        return;
+    }
+    // Initial file name
+    var name = RandomName('png');
+    // File path
+    var fp = path.join('out/', name);
+    // File name list
+    var file_list = [fp];
+    // Create initial canvas
+    var canvas = createCanvas(PAGE_W, PAGE_H);
+    var ctx = canvas.getContext('2d');
+    // Bar-code count, row/column and failure state
+    var count = 0, row = 0, col = 0, failed = null;
+    // Top/Left/Bottom/Right label rectangle points
+    var top = 0, left = 0, bottom = 0, right = 0;
+    // Iterate over requested bar-code entries
+    req.body.every(function(e, idx) {
+        // Amount of bar-codes to create
+        var amount = parseInt(e.amount);
+        // Break if amount is not valid
+        if (!e.amount || amount < 1 || amount > 1000) return !(failed = `@Invalid amount ${amount}`);
+        // Fetch label information
+        var type = e.type, id = e.id, color = e.color, code = e.code, waist = parseInt(e.waist), inseam = parseInt(e.inseam);
+        // Break if information is not valid
+        if (!code || code.length != 12 || barcoder.validate(`${code}`)) return !(failed = `@Invalid EAN code ${code}`);
+        if (!type || type.length < 1 || type.length > 12) return !(failed = `@Invalid type ${type}`);
+        if (!id || id.length < 1 || id.length > 18) return !(failed = `@Invalid id ${id}`);
+        if (!color || color.length < 1 || color.length > 18) return !(failed = `@Invalid color ${color}`);
+        if (!e.waist || waist < 1 || waist > 99) return !(failed = `@Invalid waist number ${waist}`);
+        if (!e.inseam || inseam < 1 || inseam > 99) return !(failed = `@Invalid inseam number ${inseam}`);
+        // Generate bar-code labels
+        for (var i = 0; i < amount; ++i) {
+            // Limit bar-code count
+            if (count >= 2000) {
+                 return !(failed = `@Article limit reached ${count}`);
+            }
+            // Span another page if no more room
+            if (row == 9 && col == 4) {
+                // Write current canvas
+                fs.writeFileSync(fp, canvas.toBuffer());
+                // New file name
+                name = RandomName('png');
+                // File path
+                fp = path.join('out/', name);
+                // Append to name list
+                file_list.push(fp);
+                // Create new canvas
+                canvas = createCanvas(PAGE_W, PAGE_H);
+                ctx = canvas.getContext('2d');
+                // Reset row and column
+                row = 0, col = 0;
+            }
+            // Advance row
+            if (col == 4) {
+                ++row;
+                col=0;
+            }
+            // First row?
+            if (row == 0) {
+                // Offset first row down to account for printer limits
+                top = CODE_H * row + 28;
+                left = CODE_W * col;
+                bottom = top + CODE_H;
+                right = left + CODE_W;
+            // Last row?
+            } else if (row == 9) {
+                // Offset first row up to account for printer limits
+                top = CODE_H * row - 28;
+                left = CODE_W * col;
+                bottom = top + CODE_H;
+                right = left + CODE_W;
+            } else {
+                // Compute normal label frame
+                top = CODE_H * row;
+                left = CODE_W * col;
+                bottom = top + CODE_H;
+                right = left + CODE_W;
+            }
+            // Next column
+            ++col;
+            // Next bar-code
+            ++count;
+            // Paint label content
+            GenerateLabel(ctx, top, left, bottom, right, type, id, color, code, waist, inseam);
+        }
+        // Process next one
+        return true;
+    });
+    // Write last canvas
+    if (!failed && count) {
+        fs.writeFileSync(fp, canvas.toBuffer());
+    // Should we remove leftover files?
+    } else if (failed && file_list.length > 1) {
+        // Erase temporary files
+        file_list.every(function(p, idx) {
+            fs.unlink((p), err => {
+                if (err) console.log(err);
+            });
+            // Next path
+            return true;
+        });
+    }
+    // Return response
+    if (failed) {
+        // Log event
+        if (count) console.log(`Doc generation failed: ${failed}`);
+        // Return reason
+        res.send(failed);
+        // Stop here
+        return;
+    // Do we have multiple documents?
+    } else if (file_list.length > 0) {
+        // Create document
+        const doc = new docx.Document({
+            description: "Bar-code labels",
+            title: "Labels",
+        });
+        // Add documents to be merged
+        file_list.every(function(p, idx) {
+            // Load the image into the document
+            const image = docx.Media.addImage(doc, fs.readFileSync(p), 794, 1123, {
+                floating: {
+                    horizontalPosition: {
+                        relative: docx.HorizontalPositionRelativeFrom.PAGE,
+                        align: docx.HorizontalPositionAlign.LEFT,
+                    },
+                    verticalPosition: {
+                        relative: docx.VerticalPositionRelativeFrom.PAGE,
+                        align: docx.VerticalPositionAlign.TOP,
+                    },
+                    margins: {
+                        top: 0,
+                        bottom: 0,
+                        left: 0,
+                        right: 0
+                    }
+                }
+            });
+            // Create a new section with the image
+            doc.addSection({
+                margins: {
+                    top: 0,
+                    right: 0,
+                    bottom: 0,
+                    left: 0,
+                },
+                width: {
+                    size: 100,
+                    type: docx.WidthType.PERCENTAGE
+                },
+                children: [new docx.Paragraph(image)]
+            });
+            // Next path
+            return true;
+        });
+        // File name
+        name = RandomName('docx');
+        // File path
+        fp = path.join('out/', name);
+        // Save document file
+        docx.Packer.toBuffer(doc).then((buffer) => {
+            fs.writeFileSync(fp, buffer);
+        });
+        // Erase temporary files
+        file_list.every(function(p, idx) {
+            fs.unlink((p), err => {
+                if (err) console.log(err);
+            });
+            // Next path
+            return true;
+        });
+    }
+    // Return file name
+    res.send(name);
+});
+/* --------------------------------------------------------------------------------------------------------------------
  * Start the web-server on the specified port.
 */
 app.listen(port, () => {
@@ -319,5 +504,10 @@ app.listen(port, () => {
 /* --------------------------------------------------------------------------------------------------------------------
  * Remove files after a while.
 */
-setInterval(findRemoveSync.bind(this, path.join(__dirname, '/out'), {age: {seconds: 3600}}), 600000);
-//setInterval(findRemoveSync.bind(this, path.join(__dirname, '/out'), {age: {seconds: 60}}), 60000);
+setInterval(function() {
+    findRemoveSync(path.join(__dirname, '/out'), {age: {seconds: 86400}});
+}, 86400000);
+/*setInterval(function() {
+    findRemoveSync(path.join(__dirname, '/out'), {age: {seconds: 60}});
+}, 60000);
+*/
