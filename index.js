@@ -109,7 +109,7 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, waist, inseam) {
     ctx.textAlign = 'center';
     ctx.translate(r - 216, t + 96);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText('Waist', 0, 10);
+    ctx.fillText('Größe', 0, 10);
     ctx.restore();
     // Paint #1 Label
     ctx.save();
@@ -117,7 +117,7 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, waist, inseam) {
     ctx.textAlign = 'center';
     ctx.translate(r - 216, b - 104);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText('Inseam', 0, 10);
+    ctx.fillText('Länge', 0, 10);
     ctx.restore();
     // Paint #1
     ctx.save();
