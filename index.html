@@ -97,7 +97,7 @@
             })();
             // Add a simple notification
             function AddNotification(type, head, msg, time = 5000) {
-                $('#notifications').append(`<div class="alert ${type}"><p><strong>${head}:</strong> ${msg}</p></div>`);
+                $('#notifications').append(`<div class="alert ${type}"><p><strong>${head}</strong> ${msg}</p></div>`);
                 // Remove this notification after a while
                 setTimeout(function() {
                    $('#notifications').find('div:first').remove();
