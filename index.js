@@ -197,7 +197,7 @@ app.post('/pdf', (req, res) => {
         // Fetch label information
         var type = e.type, id = e.id, color = e.color, code = e.code, waist = parseInt(e.waist), inseam = parseInt(e.inseam);
         // Break if information is not valid
-        if (!code || code.length != 12 || barcoder.validate(`${code}`)) return !(failed = `@Invalid ean code ${code}`);
+        if (!code || code.length != 12 || barcoder.validate(`${code}`)) return !(failed = `@Invalid EAN code ${code}`);
         if (!type || type.length < 1 || type.length > 12) return !(failed = `@Invalid type ${type}`);
         if (!id || id.length < 1 || id.length > 18) return !(failed = `@Invalid id ${id}`);
         if (!color || color.length < 1 || color.length > 18) return !(failed = `@Invalid color ${color}`);
