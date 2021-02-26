@@ -233,14 +233,14 @@ app.post('/pdf', (req, res) => {
             // First row?
             if (row == 0) {
                 // Offset first row down to account for printer limits
-                top = CODE_H * row + 30;
+                top = CODE_H * row + 28;
                 left = CODE_W * col;
                 bottom = top + CODE_H;
                 right = left + CODE_W;
             // Last row?
             } else if (row == 9) {
                 // Offset first row up to account for printer limits
-                top = CODE_H * row - 30;
+                top = CODE_H * row - 28;
                 left = CODE_W * col;
                 bottom = top + CODE_H;
                 right = left + CODE_W;
