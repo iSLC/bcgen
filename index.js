@@ -48,7 +48,7 @@ const CODE_H = Math.round(PAGE_H / 10); // Height
 /* --------------------------------------------------------------------------------------------------------------------
  * Paint a single label within the specified rectangle.
 */
-function GenerateLabel(ctx, t, l, b, r, type, id, color, code, num1, num2) {
+function GenerateLabel(ctx, t, l, b, r, type, id, color, code, waist, inseam) {
     // Paing outer frame
     ctx.beginPath();
     ctx.moveTo(l + 64, t + 32);
@@ -109,15 +109,15 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, num1, num2) {
     ctx.textAlign = 'center';
     ctx.translate(r - 216, t + 96);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText('Text', 0, 10);
+    ctx.fillText('Waist', 0, 10);
     ctx.restore();
     // Paint #1 Label
     ctx.save();
     ctx.font = '20px "Unispace"';
     ctx.textAlign = 'center';
-    ctx.translate(r - 216, b - 96);
+    ctx.translate(r - 216, b - 104);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText('Text', 0, 10);
+    ctx.fillText('Inseam', 0, 10);
     ctx.restore();
     // Paint #1
     ctx.save();
@@ -125,7 +125,7 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, num1, num2) {
     ctx.textAlign = 'center';
     ctx.translate(l + 344, t + 96);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText(`${num1}`, 0, 36);
+    ctx.fillText(`${waist}`, 0, 36);
     ctx.restore();
     // Paint #2
     ctx.save();
@@ -133,7 +133,7 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, num1, num2) {
     ctx.textAlign = 'center';
     ctx.translate(l + 344, b - 96);
     ctx.rotate(Math.PI / 2);
-    ctx.fillText(`${num2}`, 0, 36);
+    ctx.fillText(`${inseam}`, 0, 36);
     ctx.restore();
     // Paint Color
     ctx.save();
@@ -145,13 +145,13 @@ function GenerateLabel(ctx, t, l, b, r, type, id, color, code, num1, num2) {
     ctx.restore();
     // Draw bar-code
     bardcode.drawBarcode(ctx, `${code}`, {
-        type: 'EAN-13',
+        type: 'Code 128',
         x: l + 160,
         y: t + (b - t) / 2,
         horizontalAlign: 'center',
         verticalAlign: 'middle',
         angle: 90,
-        width: (b - t) - 32
+        width: (b - t) - 48
     });
     // Paint bar-code text
     ctx.save();
@@ -195,14 +195,14 @@ app.post('/pdf', (req, res) => {
         // Break if amount is not valid
         if (!e.amount || amount < 1 || amount > 1000) return !(failed = `@Invalid amount ${amount}`);
         // Fetch label information
-        var type = e.type, id = e.id, color = e.color, code = e.code, num1 = parseInt(e.num1), num2 = parseInt(e.num2);
+        var type = e.type, id = e.id, color = e.color, code = e.code, waist = parseInt(e.waist), inseam = parseInt(e.inseam);
         // Break if information is not valid
         if (!code || code.length != 12 || barcoder.validate(`${code}`)) return !(failed = `@Invalid ean code ${code}`);
         if (!type || type.length < 1 || type.length > 12) return !(failed = `@Invalid type ${type}`);
         if (!id || id.length < 1 || id.length > 18) return !(failed = `@Invalid id ${id}`);
         if (!color || color.length < 1 || color.length > 18) return !(failed = `@Invalid color ${color}`);
-        if (!e.num1 || num1 < 1 || num1 > 99) return !(failed = `@Invalid number ${num1}`);
-        if (!e.num2 || num2 < 1 || num2 > 99) return !(failed = `@Invalid number ${num2}`);
+        if (!e.waist || waist < 1 || waist > 99) return !(failed = `@Invalid waist number ${waist}`);
+        if (!e.inseam || inseam < 1 || inseam > 99) return !(failed = `@Invalid inseam number ${inseam}`);
         // Generate bar-code labels
         for (var i = 0; i < amount; ++i) {
             // Limit bar-code count
@@ -240,7 +240,7 @@ app.post('/pdf', (req, res) => {
             // Next bar-code
             ++count;
             // Paint label content
-            GenerateLabel(ctx, top, left, bottom, right, type, id, color, code, num1, num2);
+            GenerateLabel(ctx, top, left, bottom, right, type, id, color, code, waist, inseam);
         }
         // Process next one
         return true;
